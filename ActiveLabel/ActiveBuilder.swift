@@ -73,8 +73,7 @@ struct ActiveBuilder {
     }
     
     // 创建 url 事件
-    static func createLookMoreElements(from text: String, range: NSRange, maximumLenght: Int?) -> ([ElementTuple], String) {
-        let type = ActiveType.lookMore
+    static func createLookMoreElements(from text: String, for type: ActiveType, range: NSRange, maximumLenght: Int?) -> ([ElementTuple], String) {
         var text = text // 原 string
         // 用正则检查是否有 url
         let matches = RegexParser.getElements(from: text, with: type.pattern, range: range)
@@ -88,7 +87,7 @@ struct ActiveBuilder {
             matchInfos.append((webString, match.range))
         }
         
-        let trimmedWord = "阅读全文"
+        let trimmedWord = type.pattern
         var oldRecord = 0
         var newRecord = 0
         for (webString, webRange) in matchInfos {

@@ -32,7 +32,7 @@ struct RegexParser {
     private static func regularExpression(for pattern: String) -> NSRegularExpression? {
         if let regex = cachedRegularExpressions[pattern] {
             return regex
-        } else if let createdRegex = try? NSRegularExpression(pattern: pattern, options: [.caseInsensitive]) {
+        } else if let createdRegex = try? NSRegularExpression(pattern: pattern, options: [.caseInsensitive, .ignoreMetacharacters]) {
             cachedRegularExpressions[pattern] = createdRegex
             return createdRegex
         } else {

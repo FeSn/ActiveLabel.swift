@@ -29,7 +29,7 @@ typealias ElementTuple = (range: NSRange, element: ActiveElement, type: ActiveTy
     }
     
     // 可用的事件类型
-    open var enabledTypes: [ActiveType] = [.mention, .url, .lookMore]
+    open var enabledTypes: [ActiveType] = [.mention, .url, .lookMore(pattern: "阅读更多", matchRange: nil)]
     
     // url 最长长度
     open var urlMaximumLength: Int?
@@ -408,15 +408,17 @@ typealias ElementTuple = (range: NSRange, element: ActiveElement, type: ActiveTy
             activeElements[.url] = urlElements
         }
         
-        if enabledTypes.contains(.lookMore) {
-            // 创建 查看更多 的响应事件
-            let tuple = ActiveBuilder.createLookMoreElements(from: textString, range: textRange, maximumLenght: urlMaximumLength)
-            let urlElements = tuple.0
-            let finalText = tuple.1
-            textString = finalText
-            textLength = textString.utf16.count
-            textRange = NSRange(location: 0, length: textLength)
-            activeElements[.lookMore] = urlElements
+        for type in enabledTypes  {
+            if case .lookMore = type {
+                // 创建 查看更多 的响应事件
+                let tuple = ActiveBuilder.createLookMoreElements(from: textString, for: type, range: type.matchRange ?? textRange, maximumLenght: urlMaximumLength)
+                let urlElements = tuple.0
+                let finalText = tuple.1
+                textString = finalText
+                textLength = textString.utf16.count
+                textRange = NSRange(location: 0, length: textLength)
+                activeElements[type] = urlElements
+            }
         }
         
         for type in enabledTypes where type != .url {
@@ -426,7 +428,7 @@ typealias ElementTuple = (range: NSRange, element: ActiveElement, type: ActiveTy
             } else if type == .hashtag {
                 filter = hashtagFilterPredicate
             }
-            let hashtagElements = ActiveBuilder.createElements(type: type, from: textString, range: textRange, filterPredicate: filter)
+            let hashtagElements = ActiveBuilder.createElements(type: type, from: textString, range: type.matchRange ?? textRange, filterPredicate: filter)
             activeElements[type] = hashtagElements
         }
         
@@ -600,7 +602,7 @@ typealias ElementTuple = (range: NSRange, element: ActiveElement, type: ActiveTy
     // 点击了 #
     fileprivate func didTapLookMoretag(_ lookMoretag: String) {
         guard let lookMoretagHandler = lookMoreTapHandler else {
-            delegate?.didSelect(lookMoretag, type: .lookMore)
+            delegate?.didSelect(lookMoretag, type: .lookMore(pattern: "阅读更多", matchRange: nil))
             return
         }
         lookMoretagHandler(lookMoretag)
